@@ -1,13 +1,12 @@
 import { UserModel } from "../../models/user.model";
-import { getLastSession, pushSession, starSessionFlux, updateSession } from "./session";
+import { getLastSession, getSession, pushSession, starSessionFlux, updateSession } from "./session";
 
-export const NextStep =(number, message, req)=>{
-    // TO DO: Create hook
-    const chats = req.session.chats;
-    let lastsession: any = getLastSession(number, chats);
+export const NextStep =async (number, message, req)=>{
+    const chats = await getSession();
+    let lastsession: any = getLastSession(number, chats.chats);
     if(lastsession !== null){
         lastsession.step++;
-        req.session.chats = updateSession(lastsession, chats);
+        req.session.chats = updateSession(lastsession, chats.chats);
         starSessionFlux(lastsession, message, req);
     } else {
         const sessionObject: UserModel = {
@@ -15,7 +14,8 @@ export const NextStep =(number, message, req)=>{
             step: 0
         };
         sessionObject.step++;
-        req.session.chats = pushSession(sessionObject, chats);
+        chats.chats = pushSession(sessionObject, chats.chats);
+        await chats.save();
         starSessionFlux(sessionObject, message, req);
     }
 };

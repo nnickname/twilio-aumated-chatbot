@@ -2,7 +2,28 @@ import { ChatSteps } from "../steps.model";
 import { UserModel } from "../../models/user.model";
 import { sendTwilioMessage } from "./twilio";
 import { CommandsAvailable } from "../../commands/commans.model";
+import { getIronSession, SessionOptions } from "iron-session";
+import { cookies } from "next/headers";
+export async function getSession() {
+    const session = await getIronSession<SessionData>(cookies(), sessionOptions);
+    return session;
+  }
+export interface SessionData {
+  chats: UserModel[]
+}
 
+
+
+export const sessionOptions: SessionOptions = {
+  // You need to create a secret key at least 32 characters long.
+  password: 'qZpYtWkMnRjVhLcXbFsDdQeHwJzTnVmRkJ',
+  cookieName: "user-session",
+  cookieOptions: {
+    httpOnly: true,
+    // Secure only works in `https` environments. So if the environment is `https`, it'll return true.
+    secure: process.env.NODE_ENV === "production",
+  },
+};
 export const updateSession = (session: UserModel, users: UserModel[]) => {
     let usersCast: UserModel[] = [...users];
     const index = users?.findIndex((e) => e.waId === session.waId);
@@ -29,7 +50,7 @@ export const starSessionFlux = (lastsession: UserModel, message: any, req: any, 
             for(var child in CommandsAvailable[cmd].action_controller){
                 if(message.Body ===  CommandsAvailable[cmd].action_controller[child]){
                     if(action){
-                        CommandsAvailable[cmd].action(message.From, message, req);
+                        CommandsAvailable[cmd].action(message.get('WaId'), message, req);
                         return true;
                     }
                     
@@ -42,13 +63,13 @@ export const starSessionFlux = (lastsession: UserModel, message: any, req: any, 
             chatstring = chatstring + '\n ' + ChatSteps[lastsession.step].steps[child].body;
             if(message.Body === ChatSteps[lastsession.step].steps[child].action_controller){
                 if(action){
-                    ChatSteps[lastsession.step].steps[child].action(message.From, message, req);
+                    ChatSteps[lastsession.step].steps[child].action(message.get('WaId'), message, req);
                     return true;
                 }
                 
             }
         }
-        sendTwilioMessage(message.From, chatstring);
+        sendTwilioMessage(message.get('WaId'), chatstring);
         return true;
     }
     return false;
