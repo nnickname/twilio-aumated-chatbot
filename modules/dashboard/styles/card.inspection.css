@@ -1,0 +1,6 @@
+@media screen and (max-width: 450px) {
+    .cardInspectionResponsive{
+      max-width: 100% !important;
+      
+    }
+  }
