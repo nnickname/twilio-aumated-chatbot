@@ -48,7 +48,7 @@ export const starSessionFlux = (lastsession: UserModel, message: any, req: any, 
         
         for(var cmd in CommandsAvailable){ // Not change for map
             for(var child in CommandsAvailable[cmd].action_controller){
-                if(message.Body ===  CommandsAvailable[cmd].action_controller[child]){
+                if(message.get('Body') ===  CommandsAvailable[cmd].action_controller[child]){
                     if(action){
                         CommandsAvailable[cmd].action(message.get('WaId'), message, req);
                         return true;
@@ -61,7 +61,7 @@ export const starSessionFlux = (lastsession: UserModel, message: any, req: any, 
         let chatstring = ChatSteps[lastsession.step].body + '\n';
         for(var child in ChatSteps[lastsession.step].steps){ // Not change for map
             chatstring = chatstring + '\n ' + ChatSteps[lastsession.step].steps[child].body;
-            if(message.Body === ChatSteps[lastsession.step].steps[child].action_controller){
+            if(message.get('Body') === ChatSteps[lastsession.step].steps[child].action_controller){
                 if(action){
                     ChatSteps[lastsession.step].steps[child].action(message.get('WaId'), message, req);
                     return true;
